@@ -3,11 +3,11 @@ import pickle
 import pytz
 import requests
 import urllib.parse
-from get_events import get_events, print_event
+from get_event_categories import get_event_categories, print_event_category
 
-events = get_events()
-for event in events:
-  print_event(event)
+event_categories = get_event_categories()
+for event_category in event_categories:
+  print_event_category(event_category)
 
 event_category_id_raw: str = input('select an event type: ')
 if not event_category_id_raw.isdigit():

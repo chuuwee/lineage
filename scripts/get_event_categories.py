@@ -2,7 +2,7 @@ import requests
 import pickle
 from bs4 import BeautifulSoup
 
-def get_events():
+def get_event_categories():
 # Load the serialized cookies from a file
   with open('cookies.pkl', 'rb') as f:
     cookies = pickle.load(f)
@@ -21,11 +21,11 @@ def get_events():
 
   return data
 
-def print_event(event):
-  print('{: >2} - {}'.format((event['id']), event['name']))
+def print_event_category(event_category):
+  print('{: >2} - {}'.format((event_category['id']), event_category['name']))
 
 if __name__ == "__main__":
-  events = get_events()
+  event_categories = get_event_categories()
 # Print the extracted data
-  for event in events:
-    print_event(event)
+  for event_category in event_categories:
+    print_event_category(event_category)

@@ -5,17 +5,22 @@ import requests
 import urllib.parse
 from get_event_categories import get_event_categories, print_event_category
 from get_events import get_events, print_event
+from constants import CATEGORY_ID_BY_CATEGORY
 
-def create_event():
-  event_categories = get_event_categories()
-  for event_category in event_categories:
-    print_event_category(event_category)
+def create_event(config):
+  if config is None:
+    event_categories = get_event_categories()
+    for event_category in event_categories:
+      print_event_category(event_category)
 
-  event_category_id_raw: str = input('select an event type: ')
-  if not event_category_id_raw.isdigit():
-    raise ValueError('Invalid category id')
-  event_category_id = int(event_category_id_raw)
-  event_name: str = input('name your event: ')
+    event_category_id_raw: str = input('select an event type: ')
+    if not event_category_id_raw.isdigit():
+      raise ValueError('Invalid category id')
+    event_category_id = int(event_category_id_raw)
+    event_name: str = input('name your event: ')
+  else:
+    event_category_id = CATEGORY_ID_BY_CATEGORY.get(config.get('category'))
+    event_name = config.get('name')
 
   # Load the serialized cookies from a file
   with open('cookies.pkl', 'rb') as f:

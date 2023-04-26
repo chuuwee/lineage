@@ -1,20 +1,9 @@
-# Example raid log payload:
-#
-# [Tue Apr 11 19:57:50 2023] Players on EverQuest:
-# [Tue Apr 11 19:57:50 2023] ---------------------------
-# [Tue Apr 11 19:57:50 2023] [56 Blackguard] Lorem (Gnome) <Duis Fermentum>
-# [Tue Apr 11 20:01:55 2023]  AFK [60 Oracle] Ipsum (Ogre) <Duis Fermentum>
-# [Tue Apr 11 19:57:50 2023] [57 Blackguard] Dolor (Dwarf) <Venanatis>
-# [Tue Apr 11 20:01:55 2023] [57 Luminary] Sit (Bear) <Venanatis> LFG
-# [Tue Apr 11 20:01:55 2023] [ANONYMOUS] Amet
-# [Tue Apr 11 20:01:55 2023] [ANONYMOUS] Consectetur <Laoreet>
-# [Tue Apr 11 19:57:50 2023] There are 2 players in Temple of Veeshan.
-
 import re
 import time
 import tkinter as tk
 from tkinter import filedialog
 from utils import class_name_by_alias
+from upload_attendance import upload_attendance
 
 # create a Tkinter root window
 root = tk.Tk()
@@ -27,10 +16,14 @@ file_path = filedialog.askopenfilename()
 
 PATTERNS = {
   'DEFAULT': r"^\[.+?\] (?P<message>.+)",
-  'RAID_NAMED': r"^.*\[(?P<level_class>\d+ [A-Za-z]+|\bANONYMOUS\b)\].*? (?P<name>[A-Z][a-z]+)(?:.+\((?P<race>.+)\))?(?:.+\<(?P<guild>.+)\>)?",
+  'ACTIVITY_SLASH_WHO': r"^.*\[(?P<level_class>\d+ [A-Za-z ]+|\bANONYMOUS\b)\].*? (?P<name>[A-Z][a-z]+)(?:.+\((?P<race>.+)\))?(?:.+\<(?P<guild>.+)\>)?",
+  'ACTIVITY_START': r"^You say to your guild, '(?i:ELFSIM (?P<category>TARGET|LOCALE|EVENT)) (?P<name>.+)'",
+  'ACTIVITY_GUILD': r"^You say to your guild, '(?i:ELFSIM \+GUILD) (?P<name>.+)'",
+  'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:ELFSIM PILOT) (?P<pilot>[A-Za-z]+)'",
+  'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:ELFSIM GUEST)'"
 }
 
-def tail(filename):
+def gen_tail(filename):
   with open(filename, "r") as f:
     f.seek(0, 2)
 
@@ -43,69 +36,135 @@ def tail(filename):
 
       yield line
 
-def parse_log(file_path):
-  raid_log_started = False
-  raid_log_ended = False
-  skip_line = 0
-  raid_attendees = {}
-  for line in tail(file_path):
-    if raid_log_ended:
-      break
-
-    if skip_line:
-      skip_line -= 1
-      continue
-
+def gen_messages(file_path):
+  for line in gen_tail(file_path):
     log_match = re.match(PATTERNS['DEFAULT'], line)
     if log_match is None:
       continue
 
     message = log_match.group("message")
-    if raid_log_started:
-      raid_log_ended = message.startswith("There are ")
-      if raid_log_ended:
-        return raid_attendees
+    if message is None:
+      continue
+
+    yield message
+
+def gen_raid_activity(file_path):
+  reading_activity = False
+  reading_slash_who = False
+  for message in gen_messages(file_path):
+    if not reading_activity:
+      start_match = re.match(PATTERNS["ACTIVITY_START"], message)
+      if start_match is not None:
+        reading_activity = True
+        category, name = start_match.group("category", "name")
+        yield ('START', { 'category': category.upper(), 'name': name })
+      continue
+
+    if message.startswith("There are"):
+      reading_activity = False
+      reading_slash_who = False
+      yield ('END', None)
+      continue
+    elif message.startswith("Players on EverQuest:"):
+      reading_slash_who = True
+      continue
+    elif reading_slash_who:
+      if message.startswith('-'):
+        continue
+
+      slash_who_match = re.match(PATTERNS['ACTIVITY_SLASH_WHO'], message)
+      if slash_who_match is None:
+        continue
+
+      name, level_class, guild = slash_who_match.group("name", "level_class", "guild")
+      if level_class == "ANONYMOUS":
+        level = None
+        class_name = None
       else:
-        raid_log_match = re.match(PATTERNS['RAID_NAMED'], message)
-        if raid_log_match is None:
-          continue
+        level_str, alias = level_class.split(" ", 1)
+        level = int(level_str)
+        class_name = class_name_by_alias[alias]
 
-        name, race, level_class, guild = raid_log_match.group("name", "race", "level_class", "guild")
-        if level_class == "ANONYMOUS":
-          level = 1
-          class_name = None
-        else:
-          level_str, alias = level_class.split()
-          level = int(level_str)
-          class_name = class_name_by_alias[alias]
+      yield ('ATTENDEE', { 'name': name.capitalize(), 'level': level, 'class': class_name, 'guild': guild.upper() if guild else None })
+      continue
 
-        raid_attendees[name] = {
-          'race': race,
-          'level': level,
-          'class': class_name,
-          'guild': guild,
-        }
-    else:
-      raid_log_started = message.startswith('Players on EverQuest:')
-      skip_line += 1
+    guild_match = re.match(PATTERNS['ACTIVITY_GUILD'], message)
+    if guild_match is not None:
+      name = guild_match.group("name")
+      yield ('GUILD', { 'name': name.upper() })
+      continue
 
-def get_raid_attendance_payload():
-  raid_attendance = parse_log(file_path)
+    pilot_match = re.match(PATTERNS['ACTIVITY_PILOT'], message)
+    if pilot_match is not None:
+      pilot, bot = pilot_match.group("pilot", "bot")
+      yield ('PILOT', { 'pilot': pilot.capitalize(), 'bot': bot.capitalize() })
+      continue
 
-  char_payload = {}
-  for index, (name, char_info) in enumerate(raid_attendance.items()):
-    char_payload['playername'.format(index)] = name
-    char_payload['class[{:d}]'.format(index)] = char_info['class'] if not None else ''
-    char_payload['race[{:d}]'.format(index)] = char_info['race'] if not None else ''
-    char_payload['race[{:d}]'.format(index)] = ''
-    char_payload['level[{:d}]'.format(index)] = char_info['level']
-    char_payload['raidmember[{:d}]'.format(index)] = 0
-    char_payload['altmember[{:d}]'.format(index)] = ''
-    char_payload['indivpoints[{:d}]'.format(index)] = ''
+    guest_match = re.match(PATTERNS['ACTIVITY_GUEST'], message)
+    if guest_match is not None:
+      name = guest_match.group("name")
+      yield ('GUEST', { 'name': name.capitalize() })
+      continue
 
-  return char_payload
+def get_raid_attendance(pilots, guests, guilds, attendance):
+  # Filter out entries for players not in guilds list
+  raid_attendance = {
+    player: attendance for player, attendance in attendance.items() if attendance.get('guild') in guilds
+  }
+
+  # Keep entries for guests in guests list
+  for guest in guests:
+    if guest not in raid_attendance:
+      raid_attendance[guest] = attendance.get(guest, { 'name': guest, 'level': None, 'class': None, 'guild': None })
+
+  # Remove bot from attendance entries for pilots
+  for pilot_dict in pilots:
+    bot, pilot = pilot_dict.get("bot"), pilot_dict.get("pilot")
+    if bot in raid_attendance:
+      raid_attendance.pop(bot)
+
+    # If the bot isn't present, we're not including it in attendance
+    if bot in attendance:
+      # We build them like an anon user because they naturally should not be online
+      raid_attendance[pilot] = { 'name': pilot, 'level': None, 'class': None, 'guild': None }
+
+  return raid_attendance
+
+def gen_raid_attendance(file_path):
+  reading_attendance = False
+  pilots = None
+  guests = None
+  guilds = None
+  attendance = None
+  event = None
+  for (kind, message) in gen_raid_activity(file_path):
+    if kind == 'START':
+      pilots = []
+      guests = []
+      guilds = ['LINEAGE'] # Maybe set via CLI as the host guild
+      event = message
+      attendance = {}
+      reading_attendance = True
+    elif kind == 'END':
+      yield (event, get_raid_attendance(pilots, guests, guilds, attendance))
+      event = None
+      pilots = None
+      guests = None
+      guilds = None
+      attendance = None
+      reading_attendance = False
+    elif kind == 'ATTENDEE':
+      name = message.get('name')
+      attendance[name] = message
+    elif kind == 'PILOT':
+      pilots.append(message)
+    elif kind == 'GUEST':
+      guests.append(message.get('name'))
+    elif kind == 'GUILD':
+      guilds.append(message.get('name'))
 
 if __name__ == "__main__":
-  payload = get_raid_attendance_payload()
-  print(payload)
-
+  for event, attendance in gen_raid_attendance(file_path):
+    for name, attendee in attendance.items():
+      continue
+    upload_attendance(event, attendance)

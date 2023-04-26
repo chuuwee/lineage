@@ -1,0 +1,5 @@
+CATEGORY_ID_BY_CATEGORY = {
+  'TARGET': 13,
+  'LOCALE': 11,
+  'EVENT': 12,
+}

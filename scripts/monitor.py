@@ -133,6 +133,14 @@ def get_raid_attendance(pilots, guests, guilds, attendance):
 
   return raid_attendance
 
+def debug_string(pilots, guests, guilds, attendance):
+  return 'MEMBERS\n{}\nPILOT/BOTS\n{}\nGUESTS\n{}\nGUILDS\n{}\n'.format(
+    ','.join([name for name, attendee in attendance.items()]),
+    ','.join(['{}/{}'.format(pilot.get('pilot'), pilot.get('bot')) for pilot in pilots]),
+    ','.join(guests),
+    ','.join(guilds),
+  )
+
 def gen_raid_attendance(file_path):
   dkp = None
   event = None
@@ -151,7 +159,8 @@ def gen_raid_attendance(file_path):
       attendance = {}
       reading_attendance = True
     elif kind == 'END':
-      yield (event, get_raid_attendance(pilots, guests, guilds, attendance))
+      debug = debug_string(pilots, guests, guilds, attendance)
+      yield (event, get_raid_attendance(pilots, guests, guilds, attendance), debug)
       dkp = 1
       event = None
       pilots = None
@@ -170,7 +179,7 @@ def gen_raid_attendance(file_path):
       guilds.append(message.get('name'))
 
 if __name__ == "__main__":
-  for event, attendance in gen_raid_attendance(file_path):
+  for event, attendance, debug in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():
       logger.info('Confirmed {}, {}'.format(name, attendee))
-    upload_attendance(event, attendance)
+    upload_attendance(event, attendance, debug)

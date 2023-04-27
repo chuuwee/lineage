@@ -61,6 +61,6 @@ def upload_attendance(event, attendance, debug):
   try:
     response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
     response.raise_for_status()
-    logger.info('Upload succeeded, {} dkp, {}'.format(event['dkp'], event_['id']))
+    logger.info('Upload succeeded, {} dkp, {} attendees, {}'.format(event['dkp'], len(attendance.keys()), event_['id']))
   except Exception as err:
     logger.error('Upload failed, {}, {}'.format(event_['id'], err))

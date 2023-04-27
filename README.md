@@ -25,12 +25,14 @@ You can set a custom DKP value (default is 1):
 
 * `/guild +TARGET 3 Cazic-Thule`
 
-The string after the type and optional DKP is open-ended, so you can consider explaining context in it, too:
+The string after the type and optional DKP is open-ended, so you can consider
+explaining context in it, too:
 
 * `/guild +TARGET 2 Quillmane Hour 1`
 * `/guild +TARGET 2 Quillmane Hour 2`
 
-Once you've run ONE of the above commands, there are a handful of additional correction commands.
+Once you've run ONE of the above commands, there are a handful of additional
+correction commands.
 
 Adding a guest guild:
 * `/guild +GUILD Nova`
@@ -44,3 +46,8 @@ Specifying bot usage similarly requires sending a tell:
 LASTLY, run a final `/who` command to kick off capturing of players in zone.
 This will resolve attendance alongside the corrections and upload it to the
 website.
+
+### Debugging
+
+`debug.log` is written to the root directory and contains detailed tracking of
+script execution.

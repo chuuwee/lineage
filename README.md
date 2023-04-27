@@ -17,26 +17,29 @@ With the monitor running on your EverQuest log (and logging enabled in game),
 you begin the process of capturing attendance by writing one of the trigger
 statements into guild chat.
 
-* `/guild ELFSIM TARGET Cazic-Thule`
-* `/guild ELFSIM EVENT Farming Quillmane`
-* `/guild ELFSIM LOCALE Plane of Fear`
+* `/guild +TARGET Cazic-Thule`
+* `/guild +EVENT Farming Quillmane`
+* `/guild +LOCALE Plane of Fear`
 
-You also might consider capturing the timing with it, or the DKP if you'd like it to be a value other than 1.
+You can set a custom DKP value (default is 1):
 
-* `/guild ELFSIM TARGET 3 Cazic-Thule`
-* `/guild ELFSIM EVENT Farming Quillmane Hour 3`
-* `/guild ELFSIM LOCALE 2 Plane of Fear Hour 2`
+* `/guild +TARGET 3 Cazic-Thule`
+
+The string after the type and optional DKP is open-ended, so you can consider explaining context in it, too:
+
+* `/guild +TARGET 2 Quillmane Hour 1`
+* `/guild +TARGET 2 Quillmane Hour 2`
 
 Once you've run ONE of the above commands, there are a handful of additional correction commands.
 
 Adding a guest guild:
-* `/guild ELFSIM +GUILD Nova`
+* `/guild +GUILD Nova`
 
 Adding a guest player requires they send you a tell:
-* `/tell Yourname ELFSIM GUEST`
+* `/tell Yourname +GUEST`
 
 Specifying bot usage similarly requires sending a tell:
-* `/tell Yourname ELFSIM PILOT Pilotsrealcharname`
+* `/tell Yourname +PILOT Pilotsrealcharname`
 
 LASTLY, run a final `/who` command to kick off capturing of players in zone.
 This will resolve attendance alongside the corrections and upload it to the

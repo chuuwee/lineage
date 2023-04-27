@@ -20,10 +20,10 @@ file_path = filedialog.askopenfilename()
 PATTERNS = {
   'DEFAULT': r"^\[.+?\] (?P<message>.+)",
   'ACTIVITY_SLASH_WHO': r"^.*\[(?P<level_class>\d+ [A-Za-z ]+|\bANONYMOUS\b)\].*? (?P<name>[A-Z][a-z]+)(?:.+\((?P<race>.+)\))?(?:.+\<(?P<guild>.+)\>)?",
-  'ACTIVITY_START': r"^You say to your guild, '(?i:ELFSIM (?P<category>TARGET|LOCALE|EVENT)) (?P<dkp>\d+ )?(?P<name>.+)'",
-  'ACTIVITY_GUILD': r"^You say to your guild, '(?i:ELFSIM \+GUILD) (?P<name>.+)'",
-  'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:ELFSIM PILOT) (?P<pilot>[A-Za-z]+)'",
-  'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:ELFSIM GUEST)'"
+  'ACTIVITY_START': r"^You say to your guild, '(?i:\+(?P<category>TARGET|LOCALE|EVENT)) (?P<dkp>\d+ )?(?P<name>.+)'",
+  'ACTIVITY_GUILD': r"^You say to your guild, '(?i:\+GUILD) (?P<name>.+)'",
+  'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:\+PILOT) (?P<pilot>[A-Za-z]+)'",
+  'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+GUEST)'"
 }
 
 def gen_tail(filename):

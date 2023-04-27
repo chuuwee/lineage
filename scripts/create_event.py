@@ -6,8 +6,12 @@ import urllib.parse
 from get_event_categories import get_event_categories, print_event_category
 from get_events import get_events, print_event
 from constants import CATEGORY_ID_BY_CATEGORY
+from logger import get_logger
+
+logger = get_logger('create_event')
 
 def create_event(config):
+  logger.info('Invoking create event, {}'.format(config))
   if config is None:
     event_categories = get_event_categories()
     for event_category in event_categories:
@@ -56,15 +60,17 @@ def create_event(config):
     'submit': 'Submit',
   })
 
+  logger.info('Creating event, {}, {}'.format(event_category_id, event_name))
   # send the request
-  response = requests.post(url, cookies=cookies, headers=headers, data=data,
-  allow_redirects=False, verify=False)
+  response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
 
   events = get_events()
   for event in events:
     if event['date'] == time_obj and event['name'] == event_name:
+      logger.info('Event created, {}'.format(event['id']))
       return event
 
+  logger.error('Problem creating event, {}, {}'.format(event_category_id, event_name))
   raise ValueError("Check events page. Cannot find created event.")
 
 if __name__ == "__main__":

@@ -3,7 +3,10 @@ import time
 import tkinter as tk
 from tkinter import filedialog
 from utils import class_name_by_alias
-from upload_attendance import upload_attendance
+from upload import upload_attendance
+from logger import get_logger 
+
+logger = get_logger('monitor')
 
 # create a Tkinter root window
 root = tk.Tk()
@@ -17,7 +20,7 @@ file_path = filedialog.askopenfilename()
 PATTERNS = {
   'DEFAULT': r"^\[.+?\] (?P<message>.+)",
   'ACTIVITY_SLASH_WHO': r"^.*\[(?P<level_class>\d+ [A-Za-z ]+|\bANONYMOUS\b)\].*? (?P<name>[A-Z][a-z]+)(?:.+\((?P<race>.+)\))?(?:.+\<(?P<guild>.+)\>)?",
-  'ACTIVITY_START': r"^You say to your guild, '(?i:ELFSIM (?P<category>TARGET|LOCALE|EVENT)) (?P<name>.+)'",
+  'ACTIVITY_START': r"^You say to your guild, '(?i:ELFSIM (?P<category>TARGET|LOCALE|EVENT)) (?P<dkp>\d+ )?(?P<name>.+)'",
   'ACTIVITY_GUILD': r"^You say to your guild, '(?i:ELFSIM \+GUILD) (?P<name>.+)'",
   'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:ELFSIM PILOT) (?P<pilot>[A-Za-z]+)'",
   'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:ELFSIM GUEST)'"
@@ -56,8 +59,8 @@ def gen_raid_activity(file_path):
       start_match = re.match(PATTERNS["ACTIVITY_START"], message)
       if start_match is not None:
         reading_activity = True
-        category, name = start_match.group("category", "name")
-        yield ('START', { 'category': category.upper(), 'name': name })
+        category, name, dkp = start_match.group("category", "name", "dkp")
+        yield ('START', { 'category': category.upper(), 'name': name, 'dkp': int(dkp) if dkp is not None else 1 })
       continue
 
     if message.startswith("There are"):
@@ -131,22 +134,25 @@ def get_raid_attendance(pilots, guests, guilds, attendance):
   return raid_attendance
 
 def gen_raid_attendance(file_path):
-  reading_attendance = False
+  dkp = None
+  event = None
   pilots = None
   guests = None
   guilds = None
   attendance = None
-  event = None
+  reading_attendance = False
   for (kind, message) in gen_raid_activity(file_path):
+    logger.info('{}, {}'.format(kind, message))
     if kind == 'START':
+      event = message
       pilots = []
       guests = []
       guilds = ['LINEAGE'] # Maybe set via CLI as the host guild
-      event = message
       attendance = {}
       reading_attendance = True
     elif kind == 'END':
       yield (event, get_raid_attendance(pilots, guests, guilds, attendance))
+      dkp = 1
       event = None
       pilots = None
       guests = None
@@ -166,5 +172,5 @@ def gen_raid_attendance(file_path):
 if __name__ == "__main__":
   for event, attendance in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():
-      continue
+      logger.info('Confirmed {}, {}'.format(name, attendee))
     upload_attendance(event, attendance)

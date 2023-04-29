@@ -1,21 +1,15 @@
+import os
 import re
+import sys
 import time
 import tkinter as tk
 from tkinter import filedialog
 from utils import class_name_by_alias
 from upload import upload_attendance
-from logger import get_logger 
+from logger import get_logger
+from login import login
 
 logger = get_logger('monitor')
-
-# create a Tkinter root window
-root = tk.Tk()
-
-# hide the main window
-root.withdraw()
-
-# show the file dialog and get the selected file path
-file_path = filedialog.askopenfilename()
 
 PATTERNS = {
   'DEFAULT': r"^\[.+?\] (?P<message>.+)",
@@ -179,6 +173,26 @@ def gen_raid_attendance(file_path):
       guilds.append(message.get('name'))
 
 if __name__ == "__main__":
+  # TODO(ISSUE-11): We should create an entry point where this can be centralized, but
+  # it's duplicated in the logger for now.
+  if getattr(sys, 'frozen', False):
+    # we are running in a bundle
+    executable_path = sys.executable
+    executable_dir = os.path.dirname(executable_path)
+    os.chdir(executable_dir)
+
+  if not os.path.exists('cookies.pkl'):
+    login()
+
+  # create a Tkinter root window
+  root = tk.Tk()
+
+  # hide the main window
+  root.withdraw()
+
+  # show the file dialog and get the selected file path
+  file_path = filedialog.askopenfilename()
+
   for event, attendance, debug in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():
       logger.info('Confirmed {}, {}'.format(name, attendee))

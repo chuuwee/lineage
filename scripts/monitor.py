@@ -17,7 +17,9 @@ PATTERNS = {
   'ACTIVITY_START': r"^You say to your guild, '(?i:\+(?P<category>TARGET|LOCALE|EVENT)) (?P<dkp>\d+ )?(?P<name>.+)'",
   'ACTIVITY_GUILD': r"^You say to your guild, '(?i:\+GUILD) (?P<name>.+)'",
   'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:\+PILOT) (?P<pilot>[A-Za-z]+)'",
-  'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+GUEST)'"
+  'ACTIVITY_PILOT_ALTERNATE': r"^(?P<bot>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+PILOT) (?P<pilot>[A-Za-z]+)",
+  'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+GUEST)'",
+  'ACTIVITY_GUEST_ALTERNATE': r"^(?P<name>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+GUEST)",
 }
 
 def gen_tail(filename):
@@ -97,9 +99,21 @@ def gen_raid_activity(file_path):
       yield ('PILOT', { 'pilot': pilot.capitalize(), 'bot': bot.capitalize() })
       continue
 
+    pilot_match_alternate = re.match(PATTERNS['ACTIVITY_PILOT_ALTERNATE'], message)
+    if pilot_match_alternate is not None:
+      pilot, bot = pilot_match_alternate.group("pilot", "bot")
+      yield ('PILOT', { 'pilot': pilot.capitalize(), 'bot': bot.capitalize() })
+      continue
+
     guest_match = re.match(PATTERNS['ACTIVITY_GUEST'], message)
     if guest_match is not None:
       name = guest_match.group("name")
+      yield ('GUEST', { 'name': name.capitalize() })
+      continue
+
+    guest_match_alternate = re.match(PATTERNS['ACTIVITY_GUEST_ALTERNATE'], message)
+    if guest_match_alternate is not None:
+      name = guest_match_alternate.group("name")
       yield ('GUEST', { 'name': name.capitalize() })
       continue
 

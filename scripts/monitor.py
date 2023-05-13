@@ -18,6 +18,7 @@ PATTERNS = {
   'ACTIVITY_GUILD': r"^You say to your guild, '(?i:\+GUILD) (?P<name>.+)'",
   'ACTIVITY_PILOT': r"^(?P<bot>[A-Z][a-z]+) tells you, '(?i:\+PILOT) (?P<pilot>[A-Za-z]+)'",
   'ACTIVITY_PILOT_ALTERNATE': r"^(?P<bot>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+PILOT) (?P<pilot>[A-Za-z]+)",
+  'ACTIVITY_PILOT_GUILD': r"^(?P<bot>[A-Z][a-z]+) tells the guild, '(?i:\+PILOT) (?P<pilot>[A-Za-z]+)'",
   'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+GUEST)'",
   'ACTIVITY_GUEST_ALTERNATE': r"^(?P<name>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+GUEST)",
 }
@@ -102,6 +103,12 @@ def gen_raid_activity(file_path):
     pilot_match_alternate = re.match(PATTERNS['ACTIVITY_PILOT_ALTERNATE'], message)
     if pilot_match_alternate is not None:
       pilot, bot = pilot_match_alternate.group("pilot", "bot")
+      yield ('PILOT', { 'pilot': pilot.capitalize(), 'bot': bot.capitalize() })
+      continue
+
+    pilot_match_guild = re.match(PATTERNS['ACTIVITY_PILOT_GUILD'], message)
+    if pilot_match_guild is not None:
+      pilot, bot = pilot_match_guild.group("pilot", "bot")
       yield ('PILOT', { 'pilot': pilot.capitalize(), 'bot': bot.capitalize() })
       continue
 

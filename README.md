@@ -40,8 +40,19 @@ Adding a guest guild:
 Adding a guest player requires they send you a tell:
 * `/tell Yourname +GUEST`
 
-Specifying bot usage similarly requires sending a tell:
+Specifying bot usage similarly requires them sending a tell or notifying the
+guild:
 * `/tell Yourname +PILOT Pilotsrealcharname`
+* `/gu +PILOT Pilotsrealcharname`
+
+If they are not present in zone, they can similarly send a tell or notify the
+guild:
+* `/tell Yourname +ABSENT`
+* `/gu +ABSENT`
+
+And if they are absent while driving a bot:
+* `/tell Yourname +ABSENT Pilotsrealcharname`
+* `/gu +ABSENT Pilotsrealcharname`
 
 LASTLY, run a final `/who` command to kick off capturing of players in zone.
 This will resolve attendance alongside the corrections and upload it to the

@@ -21,6 +21,9 @@ PATTERNS = {
   'ACTIVITY_PILOT_GUILD': r"^(?P<bot>[A-Z][a-z]+) tells the guild, '(?i:\+PILOT) (?P<pilot>[A-Za-z]+)'",
   'ACTIVITY_GUEST': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+GUEST)'",
   'ACTIVITY_GUEST_ALTERNATE': r"^(?P<name>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+GUEST)",
+  'ACTIVITY_ABSENT': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?'",
+  'ACTIVITY_ABSENT_ALTERNATE': r"^(?P<name>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?",
+  'ACTIVITY_ABSENT_GUILD': r"^(?P<name>[A-Z][a-z]+) tells the guild, '(?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?'",
 }
 
 def gen_tail(filename):
@@ -124,7 +127,25 @@ def gen_raid_activity(file_path):
       yield ('GUEST', { 'name': name.capitalize() })
       continue
 
-def get_raid_attendance(pilots, guests, guilds, attendance):
+    absent_match = re.match(PATTERNS['ACTIVITY_ABSENT'], message)
+    if absent_match is not None:
+      name, pilot = absent_match.group("name", "pilot")
+      yield ('ABSENT', { 'name': name.capitalize(), 'pilot': pilot.capitalize() if pilot else None })
+      continue
+
+    absent_match_alternate = re.match(PATTERNS['ACTIVITY_ABSENT_ALTERNATE'], message)
+    if absent_match_alternate is not None:
+      name, pilot = absent_match_alternate.group("name", "pilot")
+      yield ('ABSENT', { 'name': name.capitalize(), 'pilot': pilot.capitalize() if pilot else None })
+      continue
+
+    absent_match_guild = re.match(PATTERNS['ACTIVITY_ABSENT_GUILD'], message)
+    if absent_match_guild is not None:
+      name, pilot = absent_match_guild.group("name", "pilot")
+      yield ('ABSENT', { 'name': name.capitalize(), 'pilot': pilot.capitalize() if pilot else None })
+      continue
+
+def get_raid_attendance(pilots, guests, guilds, absentees, attendance):
   # Filter out entries for players not in guilds list
   raid_attendance = {
     player: attendance for player, attendance in attendance.items() if attendance.get('guild') in guilds
@@ -145,25 +166,37 @@ def get_raid_attendance(pilots, guests, guilds, attendance):
     if bot in attendance:
       # We build them like an anon user because they naturally should not be online
       raid_attendance[pilot] = { 'name': pilot, 'level': None, 'class': None, 'guild': None }
+  
+  for absentee_dict in absentees:
+    name, pilot = absentee_dict.get("name"), absentee_dict.get("pilot")
+    name = name if pilot is None else pilot
+    raid_attendance[name] = { 'name': name, 'level': None, 'class': None, 'guild': None }
 
   return raid_attendance
 
-def debug_string(pilots, guests, guilds, attendance):
-  return 'MEMBERS\n{}\nPILOT/BOTS\n{}\nGUESTS\n{}\nGUILDS\n{}\n'.format(
-    ','.join([name for name, attendee in attendance.items()]),
-    ','.join(['{}/{}'.format(pilot.get('pilot'), pilot.get('bot')) for pilot in pilots]),
-    ','.join(guests),
-    ','.join(guilds),
+def format_absentee(absentee):
+  name, pilot = absentee.get('name'), absentee.get('pilot')
+  if pilot is None:
+    return name
+  return '{}/{}'.format(pilot, name) 
+
+def debug_string(pilots, guests, guilds, absentees, attendance, raid_attendance):
+  return 'RAID\n{}\nPILOT/BOTS\n{}\nGUESTS\n{}\nABSENTEES/BOTS\n{}\nGUILDS\n{}\nWHO\n{}\n'.format(
+    '\n'.join(sorted(['  {}'.format(name) for name, attendee in raid_attendance.items()])),
+    '\n'.join(sorted(['  {}/{}'.format(pilot.get('pilot'), pilot.get('bot')) for pilot in pilots])),
+    '\n'.join(sorted(['  {}'.format(guest) for guest in guests])),
+    '\n'.join(sorted(['  {}'.format(format_absentee(absentee)) for absentee in absentees])),
+    '\n'.join(sorted(['  {}'.format(guild) for guild in guilds])),
+    '\n'.join(sorted(['  {}'.format(name) for name, attendee in attendance.items()])),
   )
 
 def gen_raid_attendance(file_path):
-  dkp = None
   event = None
   pilots = None
   guests = None
   guilds = None
+  absentees = None
   attendance = None
-  reading_attendance = False
   for (kind, message) in gen_raid_activity(file_path):
     logger.info('{}, {}'.format(kind, message))
     if kind == 'START':
@@ -171,18 +204,18 @@ def gen_raid_attendance(file_path):
       pilots = []
       guests = []
       guilds = ['LINEAGE'] # Maybe set via CLI as the host guild
+      absentees = []
       attendance = {}
-      reading_attendance = True
     elif kind == 'END':
-      debug = debug_string(pilots, guests, guilds, attendance)
-      yield (event, get_raid_attendance(pilots, guests, guilds, attendance), debug)
-      dkp = 1
+      raid_attendance = get_raid_attendance(pilots, guests, guilds, absentees, attendance)
+      debug = debug_string(pilots, guests, guilds, absentees, attendance, raid_attendance)
+      yield (event, raid_attendance, debug)
       event = None
       pilots = None
       guests = None
       guilds = None
+      absentees = None
       attendance = None
-      reading_attendance = False
     elif kind == 'ATTENDEE':
       name = message.get('name')
       attendance[name] = message
@@ -192,6 +225,8 @@ def gen_raid_attendance(file_path):
       guests.append(message.get('name'))
     elif kind == 'GUILD':
       guilds.append(message.get('name'))
+    elif kind == 'ABSENT':
+      absentees.append(message)
 
 if __name__ == "__main__":
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but

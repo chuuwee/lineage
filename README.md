@@ -60,6 +60,9 @@ guild:
 * `/tell Yourname +PILOT Pilotsrealcharname`
 * `/gu +PILOT Pilotsrealcharname`
 
+If (AND ONLY IF YOU) you are the raid leader, and you are driving a bot, you can use emotes to remove the bot from attendance log and put yourself in its place:
+* `/em +PILOT Pilotsrealcharname`
+
 If they are not present in zone, they can similarly send a tell or notify the
 guild:
 * `/tell Yourname +ABSENT`

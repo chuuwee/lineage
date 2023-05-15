@@ -27,10 +27,10 @@ def upload_attendance(event, attendance, debug):
     cookies = pickle.load(f)
 
   # Set the timezone to Central Standard Time
-  eastern = pytz.timezone('US/Central')
+  central = pytz.timezone('US/Central')
 
-  # Get the current time in Eastern Standard Time
-  now = datetime.now(eastern)
+  # Get the current time in Central Standard Time
+  now = datetime.now(central)
 
   # Format the current time as a string in the desired format
   date_str = now.strftime("%M/%D/%Y").lower()

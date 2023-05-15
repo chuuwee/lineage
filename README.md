@@ -19,6 +19,9 @@ There are three applications available in the tool kit:
 * `dkp-upload.exe`
   * Parses *.raid files of captured raids. Will ask for your login (unless
   you're logged in) and the location of the relevant *.raid file.
+* `dkp-peek.exe`
+  * Prints summary of a *.raid file. Will prompt for location of a .raid file
+  and print contents. Useful for admins to validate logs before upload.
 
 All three applications will output state information about what they're
 capturing as they run.

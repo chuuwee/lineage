@@ -57,7 +57,7 @@ def store_attendance(event, attendance, debug):
 
   filename = get_filename(event)
   # serialize the cookies to a file
-  with open('{}.pkl'.format(filename), 'wb') as f:
+  with open('{}.raid'.format(filename), 'wb') as f:
     pickle.dump({
       'event_date': event_date,
       'event_name': event_name,

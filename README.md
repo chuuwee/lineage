@@ -1,15 +1,30 @@
 # Lineage
 
-Short set of scripts intended to support raid / guild leads in populating DKP
-tracking website.
+Short set of applications intended to support raid / guild leads in populating
+DKP tracking website.
 
 ## Instructions
 
-### Running script
-* Install Python 3.10
-* Run `pip install -r requirements.txt` to get dependencies.
-* Run `python scripts/login.py`
-* Run `python scripts/monitor.py`
+There are three applications available in the tool kit:
+
+* `dkp-monitor.exe`
+  * This is for raid leads / site admins who can submit DKP logs freely. It will
+  request a login and password for the site, followed by your characters
+  logfile.
+* `dkp-monitor-guest.exe`
+  * This is for raiders who would like to assist in running a raid, and can run
+  what amounts to an offline version of the above scripts. It will ask for your
+  characters logfile, and generate files with extension *.raid as you capture
+  raid attendance. Hand these to a raid lead for upload.
+* `dkp-upload.exe`
+  * Parses *.raid files of captured raids. Will ask for your login (unless
+  you're logged in) and the location of the relevant *.raid file.
+
+All three applications will output state information about what they're
+capturing as they run.
+
+Consider keeping your log around in the event you need or want to corroborate
+any of the application's decisions.
 
 ### In game commands
 

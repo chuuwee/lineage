@@ -43,7 +43,7 @@ def store_attendance(event, attendance, debug):
   char_payload = get_raid_attendance_payload(attendance)
 
   # set the form data for the request
-  data = urllib.parse.urlencode({
+  data = {
     'server': 'P99 Green',
     'date': date_str,
     'dkpsystemid': 1,
@@ -53,11 +53,12 @@ def store_attendance(event, attendance, debug):
     'process': 'Submit This Raid',
     'game': 'eq',
     **char_payload
-  })
+  }
 
   filename = get_filename(event)
   # serialize the cookies to a file
   with open('{}.raid'.format(filename), 'wb') as f:
+    logger.info('Writing file, {}'.format('{}.raid'.format(filename)))
     pickle.dump({
       'event_date': event_date,
       'event_name': event_name,

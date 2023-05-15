@@ -3,17 +3,22 @@ import pickle
 import requests
 import sys
 import tkinter as tk
+import urllib
 from get_events import get_events
 from logger import get_logger
 from login import login
 from tkinter import filedialog
-from urllib import request
 
 logger = get_logger('monitor')
 
 def create_attendance_from_log(guest_log, event, cookies):
   event_name = guest_log.get('event_name')
   attendance_data = guest_log.get('attendance_data')
+  encoded_attendance_data = urllib.parse.urlencode({
+    'lanpartyid': event['id'],
+    **attendance_data
+  })
+
   url: str = 'http://lineageeq.dkpsystem.com/admineqdkpupload.php'
   headers: dict[str, str] = {
     'content-type': 'application/x-www-form-urlencoded',
@@ -22,7 +27,7 @@ def create_attendance_from_log(guest_log, event, cookies):
   logger.info('Uploading attendance, {}, {}'.format(event['id'], event_name))
   # send the request
   try:
-    response = requests.post(url, cookies=cookies, headers=headers, data=attendance_data, allow_redirects=False, verify=False)
+    response = requests.post(url, cookies=cookies, headers=headers, data=encoded_attendance_data, allow_redirects=False, verify=False)
     response.raise_for_status()
     logger.info('Upload succeeded, {}'.format(event['id']))
   except Exception as err:
@@ -32,6 +37,7 @@ def create_event_from_log(guest_log, cookies):
   event_date = guest_log.get('event_date')
   event_name = guest_log.get('event_name')
   event_data = guest_log.get('event_data')
+  encoded_event_data = urllib.parse.urlencode(event_data)
   url: str = 'http://lineageeq.dkpsystem.com/editevent.php'
   headers: dict[str, str] = {
     'content-type': 'application/x-www-form-urlencoded',
@@ -39,7 +45,7 @@ def create_event_from_log(guest_log, cookies):
 
   logger.info('Creating event, {}'.format(event_name))
   # send the request
-  requests.post(url, cookies=cookies, headers=headers, data=event_data, allow_redirects=False, verify=False)
+  requests.post(url, cookies=cookies, headers=headers, data=encoded_event_data, allow_redirects=False, verify=False)
 
   events = get_events()
   for event in events:

@@ -52,7 +52,7 @@ def create_event(config, live = True):
   }
 
   # set the form data for the request
-  data = urllib.parse.urlencode({
+  data = {
     'eventcategoryid': event_category_id,
     'game': 'eq',
     'lanparty': event_name,
@@ -62,12 +62,13 @@ def create_event(config, live = True):
     'day': time_str,
     'description': DKP_SCRIPT_VERSION_TAG,
     'submit': 'Submit',
-  })
+  }
 
   if live:
+    encoded_data = urllib.parse.urlencode(data)
     logger.info('Creating event, {}, {}'.format(event_category_id, event_name))
     # send the request
-    response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
+    response = requests.post(url, cookies=cookies, headers=headers, data=encoded_data, allow_redirects=False, verify=False)
 
     events = get_events()
     for event in events:

@@ -17,11 +17,16 @@ def get_logger(log_name):
   # Create a file handler for the logger
   handler = logging.FileHandler('debug.log')
 
+  # Create a stream handler for the logger
+  stream_handler = logging.StreamHandler()
+
   # Create a formatter for the log messages
   formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%m/%d/%Y %H:%M:%S%z')
   handler.setFormatter(formatter)
+  stream_handler.setFormatter(formatter)
 
   # Add the handler to the logger
   logger.addHandler(handler)
+  logger.addHandler(stream_handler)
 
   return logger

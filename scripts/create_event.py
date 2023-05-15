@@ -11,9 +11,9 @@ from constants import DKP_SCRIPT_VERSION_TAG
 
 logger = get_logger('create_event')
 
-def create_event(config):
+def create_event(config, live = True):
   logger.info('Invoking create event, {}'.format(config))
-  if config is None:
+  if live and config is None:
     event_categories = get_event_categories()
     for event_category in event_categories:
       print_event_category(event_category)
@@ -23,13 +23,16 @@ def create_event(config):
       raise ValueError('Invalid category id')
     event_category_id = int(event_category_id_raw)
     event_name: str = input('name your event: ')
-  else:
+  elif config is not None:
     event_category_id = CATEGORY_ID_BY_CATEGORY.get(config.get('category'))
     event_name = config.get('name')
+  else:
+    raise ValueError('Problem creating event')
 
-  # Load the serialized cookies from a file
-  with open('cookies.pkl', 'rb') as f:
-    cookies = pickle.load(f)
+  if live:
+    # Load the serialized cookies from a file
+    with open('cookies.pkl', 'rb') as f:
+      cookies = pickle.load(f)
 
   # Set the timezone to Central Standard Time
   eastern = pytz.timezone('US/Central')
@@ -61,18 +64,21 @@ def create_event(config):
     'submit': 'Submit',
   })
 
-  logger.info('Creating event, {}, {}'.format(event_category_id, event_name))
-  # send the request
-  response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
+  if live:
+    logger.info('Creating event, {}, {}'.format(event_category_id, event_name))
+    # send the request
+    response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
 
-  events = get_events()
-  for event in events:
-    if event['date'] == time_obj and event['name'] == event_name:
-      logger.info('Event created, {}'.format(event['id']))
-      return event
+    events = get_events()
+    for event in events:
+      if event['date'] == time_obj and event['name'] == event_name:
+        logger.info('Event created, {}'.format(event['id']))
+        return event
 
-  logger.error('Problem creating event, {}, {}'.format(event_category_id, event_name))
-  raise ValueError("Check events page. Cannot find created event.")
+    logger.error('Problem creating event, {}, {}'.format(event_category_id, event_name))
+    raise ValueError("Check events page. Cannot find created event.")
+  else:
+    return (time_obj, event_name, data)
 
 if __name__ == "__main__":
   event = create_event()

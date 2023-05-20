@@ -1,9 +1,11 @@
 import os
 import pickle
+import pytz
 import requests
 import sys
 import tkinter as tk
 import urllib
+from utils import report_to_discord
 from get_events import get_events
 from logger import get_logger
 from login import login
@@ -13,7 +15,9 @@ logger = get_logger('monitor')
 
 def create_attendance_from_log(guest_log, event, cookies):
   event_name = guest_log.get('event_name')
+  event_date = guest_log.get('event_date')
   attendance_data = guest_log.get('attendance_data')
+  dkp = attendance_data.get('points')
   encoded_attendance_data = urllib.parse.urlencode({
     'lanpartyid': event['id'],
     **attendance_data
@@ -24,11 +28,17 @@ def create_attendance_from_log(guest_log, event, cookies):
     'content-type': 'application/x-www-form-urlencoded',
   }
 
+  # Localize before sending to Discord
+  central = pytz.timezone('US/Central')
+  localized_date = central.localize(event_date)
+
   logger.info('Uploading attendance, {}, {}'.format(event['id'], event_name))
   # send the request
   try:
     response = requests.post(url, cookies=cookies, headers=headers, data=encoded_attendance_data, allow_redirects=False, verify=False)
     response.raise_for_status()
+    debug = guest_log.get('debug')
+    report_to_discord(event_name, localized_date, dkp, event['id'], debug)
     logger.info('Upload succeeded, {}'.format(event['id']))
   except Exception as err:
     logger.error('Upload failed, {}, {}'.format(event['id'], err))

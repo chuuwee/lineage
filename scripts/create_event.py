@@ -35,10 +35,10 @@ def create_event(config, live = True):
       cookies = pickle.load(f)
 
   # Set the timezone to Central Standard Time
-  eastern = pytz.timezone('US/Central')
+  central = pytz.timezone('US/Central')
 
-  # Get the current time in Eastern Standard Time
-  now = datetime.now(eastern)
+  # Get the current time in Central Standard Time
+  now = datetime.now(central)
 
   # Format the current time as a string in the desired format
   time_str = now.strftime("%m/%d/%Y %I:%M%p").lower()

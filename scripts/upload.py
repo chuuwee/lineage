@@ -3,6 +3,7 @@ import pickle
 import pytz
 import requests
 import urllib.parse
+from utils import debug_str, report_to_discord
 from create_event import create_event
 from logger import get_logger
 from constants import DKP_SCRIPT_VERSION_TAG
@@ -51,7 +52,7 @@ def upload_attendance(event, attendance, debug):
     'dkpsystemid': 1,
     'pointtype': 'straight',
     'points': event['dkp'],
-    'description': '{}\n{}'.format(debug, DKP_SCRIPT_VERSION_TAG),
+    'description': '{}\n{}'.format(debug_str(**debug), DKP_SCRIPT_VERSION_TAG),
     'process': 'Submit This Raid',
     'game': 'eq',
     **char_payload
@@ -62,6 +63,7 @@ def upload_attendance(event, attendance, debug):
   try:
     response = requests.post(url, cookies=cookies, headers=headers, data=data, allow_redirects=False, verify=False)
     response.raise_for_status()
+    report_to_discord(event['name'], now, event['dkp'], event_['id'], debug)
     logger.info('Upload succeeded, {} dkp, {} attendees, {}'.format(event['dkp'], len(attendance.keys()), event_['id']))
   except Exception as err:
     logger.error('Upload failed, {}, {}'.format(event_['id'], err))

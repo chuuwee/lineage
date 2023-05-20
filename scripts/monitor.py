@@ -4,6 +4,7 @@ import sys
 import time
 import tkinter as tk
 from tkinter import filedialog
+from utils import debug_obj
 from utils import class_name_by_alias
 from upload import upload_attendance
 from logger import get_logger
@@ -183,22 +184,6 @@ def get_raid_attendance(pilots, guests, guilds, absentees, attendance):
 
   return raid_attendance
 
-def format_absentee(absentee):
-  name, pilot = absentee.get('name'), absentee.get('pilot')
-  if pilot is None:
-    return name
-  return '{}/{}'.format(pilot, name) 
-
-def debug_string(pilots, guests, guilds, absentees, attendance, raid_attendance):
-  return 'RAID\n{}\nPILOT/BOTS\n{}\nGUESTS\n{}\nABSENTEES/BOTS\n{}\nGUILDS\n{}\nWHO\n{}\n'.format(
-    '\n'.join(sorted(['  {}'.format(name) for name, attendee in raid_attendance.items()])),
-    '\n'.join(sorted(['  {}/{}'.format(pilot.get('pilot'), pilot.get('bot')) for pilot in pilots])),
-    '\n'.join(sorted(['  {}'.format(guest) for guest in guests])),
-    '\n'.join(sorted(['  {}'.format(format_absentee(absentee)) for absentee in absentees])),
-    '\n'.join(sorted(['  {}'.format(guild) for guild in guilds])),
-    '\n'.join(sorted(['  {}'.format(name) for name, attendee in attendance.items()])),
-  )
-
 def gen_raid_attendance(file_path):
   event = None
   pilots = None
@@ -217,7 +202,7 @@ def gen_raid_attendance(file_path):
       attendance = {}
     elif kind == 'END':
       raid_attendance = get_raid_attendance(pilots, guests, guilds, absentees, attendance)
-      debug = debug_string(pilots, guests, guilds, absentees, attendance, raid_attendance)
+      debug = debug_obj(pilots, guests, guilds, absentees, attendance, raid_attendance)
       yield (event, raid_attendance, debug)
       event = None
       pilots = None

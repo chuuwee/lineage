@@ -5,13 +5,13 @@ import sys
 import pytz
 import time
 import tkinter
-import urllib.parse
 from constants import DKP_SCRIPT_VERSION_TAG
 from create_event import create_event
 from datetime import datetime
 from logger import get_logger
 from tkinter import filedialog
 from monitor import gen_raid_attendance
+from utils import debug_str
 from upload import get_raid_attendance_payload
 
 logger = get_logger('guest_monitor')
@@ -49,7 +49,7 @@ def store_attendance(event, attendance, debug):
     'dkpsystemid': 1,
     'pointtype': 'straight',
     'points': event['dkp'],
-    'description': '{}\n{}'.format(debug, DKP_SCRIPT_VERSION_TAG),
+    'description': '{}\n{}'.format(debug_str(**debug), DKP_SCRIPT_VERSION_TAG),
     'process': 'Submit This Raid',
     'game': 'eq',
     **char_payload
@@ -64,6 +64,7 @@ def store_attendance(event, attendance, debug):
       'event_name': event_name,
       'event_data': event_,
       'attendance_data': data,
+      'debug': debug,
     }, f)
 
 if __name__ == "__main__":

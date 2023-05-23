@@ -67,6 +67,12 @@ def debug_obj(pilots, guests, guilds, absentees, attendance, raid_attendance):
   }
 
 def debug_str(pilots, guests, guilds, absentees, attendance, raid_attendance):
+  pilots = pilots or []
+  guests = guests or []
+  guilds = guilds or []
+  absentees = absentees or []
+  attendance = attendance or {}
+  raid_attendance = raid_attendance or {}
   return 'RAID\n{}\nPILOT/BOTS\n{}\nGUESTS\n{}\nABSENTEES/BOTS\n{}\nGUILDS\n{}\nWHO\n{}\n'.format(
     '\n'.join(sorted(['  {}'.format(name) for name, attendee in raid_attendance.items()])),
     '\n'.join(sorted(['  {}/{}'.format(pilot.get('pilot'), pilot.get('bot')) for pilot in pilots])),

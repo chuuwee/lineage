@@ -81,5 +81,11 @@ website.
 
 ### Debugging
 
+IF you'd like to check the current state of data collection, run:
+* `/em +TEST`
+
+If you'd like to cancel an event mid-collection to restart it:
+* `/em +CANCEL`
+
 `debug.log` is written to the root directory and contains detailed tracking of
 script execution.

@@ -4,9 +4,9 @@ import sys
 import time
 import tkinter as tk
 from tkinter import filedialog
-from utils import debug_obj
-from utils import class_name_by_alias
+from utils import debug_obj, debug_str, class_name_by_alias
 from upload import upload_attendance
+from get_events import get_events
 from logger import get_logger
 from login import login
 
@@ -26,6 +26,8 @@ PATTERNS = {
   'ACTIVITY_ABSENT': r"^(?P<name>[A-Z][a-z]+) tells you, '(?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?'",
   'ACTIVITY_ABSENT_ALTERNATE': r"^(?P<name>[A-Z][a-z]+) -> [A-z][a-z]+: (?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?",
   'ACTIVITY_ABSENT_GUILD': r"^(?P<name>[A-Z][a-z]+) tells the guild, '(?i:\+ABSENT)( (?P<pilot>[A-Za-z]+))?'",
+  'ACTIVITY_SYSTEM_TEST': r"(?P<name>[A-Z][a-z]+) (?i:\+TEST)",
+  'ACTIVITY_CANCEL': r"(?P<name>[A-Z][a-z]+) (?i:\+CANCEL)",
 }
 
 def gen_tail(filename):
@@ -53,10 +55,39 @@ def gen_messages(file_path):
 
     yield message
 
+def is_site_integration_enabled():
+  if os.path.exists('cookies.pkl'):
+    try:
+      events = get_events()
+      if len(events) != 0:
+        return True
+    except Exception as err:
+      return False
+  return False
+
 def gen_raid_activity(file_path):
   reading_activity = False
   reading_slash_who = False
   for message in gen_messages(file_path):
+    system_test_match = re.match(PATTERNS['ACTIVITY_SYSTEM_TEST'], message)
+    if system_test_match is not None:
+      name = system_test_match.group("name")
+      logger.info('[SYSTEM CHECK] {}'.format(name))
+      logger.info('[SYSTEM CHECK] Site integration {}'.format(is_site_integration_enabled()))
+      logger.info('[SYSTEM CHECK] Discord integration {}'.format(os.path.exists('webhook.url')))
+      logger.info('[SYSTEM CHECK] Reading activity {}'.format(reading_activity))
+      logger.info('[SYSTEM CHECK] Reading /who {}'.format(reading_slash_who))
+      yield ('SYSTEM_CHECK', None)
+      continue
+
+    cancel_match = re.match(PATTERNS['ACTIVITY_CANCEL'], message)
+    if cancel_match is not None:
+      logger.info('[CANCEL] Canceling ongoing read operations')
+      reading_activity = False
+      reading_slash_who = False
+      yield ('CANCEL', None)
+      continue
+
     if not reading_activity:
       start_match = re.match(PATTERNS["ACTIVITY_START"], message)
       if start_match is not None:
@@ -66,12 +97,14 @@ def gen_raid_activity(file_path):
       continue
 
     if message.startswith("There are"):
+      logger.info('Saw "There are"; stop reading /who')
       reading_activity = False
       reading_slash_who = False
       yield ('END', None)
       continue
 
     elif message.startswith("Players on EverQuest:"):
+      logger.info('Saw "Players on EverQuest"; reading /who')
       reading_slash_who = True
       continue
 
@@ -156,6 +189,11 @@ def gen_raid_activity(file_path):
       continue
 
 def get_raid_attendance(pilots, guests, guilds, absentees, attendance):
+  pilots = pilots or []
+  guests = guests or []
+  guilds = guilds or []
+  absentees = absentees or []
+  attendance = attendance or {}
   # Filter out entries for players not in guilds list
   raid_attendance = {
     player: attendance for player, attendance in attendance.items() if attendance.get('guild') in guilds
@@ -221,6 +259,20 @@ def gen_raid_attendance(file_path):
       guilds.append(message.get('name'))
     elif kind == 'ABSENT':
       absentees.append(message)
+    elif kind == 'SYSTEM_CHECK':
+      logger.info('[SYSTEM CHECK] Event {}'.format(event))
+      raid_attendance = get_raid_attendance(pilots, guests, guilds, absentees, attendance)
+      debug = debug_obj(pilots, guests, guilds, absentees, attendance, raid_attendance)
+      logger.info('[SYSTEM CHECK] State {}'.format(debug))
+      logger.info('[SYSTEM CHECK] State \n{}'.format(debug_str(**debug)))
+    elif kind == 'CANCEL':
+      logger.info('[CANCEL] Clearing all state')
+      event = None
+      pilots = None
+      guests = None
+      guilds = None
+      absentees = None
+      attendance = None
 
 if __name__ == "__main__":
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but
@@ -242,6 +294,7 @@ if __name__ == "__main__":
 
   # show the file dialog and get the selected file path
   file_path = filedialog.askopenfilename()
+  logger.info('Monitoring {}'.format(file_path))
 
   for event, attendance, debug in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():

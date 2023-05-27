@@ -226,7 +226,7 @@ def get_raid_attendance(pilots: Dict[str, str], guests: Set[str], guilds: Set[st
       raid_attendance[pilot] = { 'name': pilot, 'level': None, 'class': None, 'guild': None }
   
   for absentee in absentees:
-    name = absentee if absentee not in pilots else pilots.get('absentee')
+    name = absentee if absentee not in pilots else pilots.get(absentee)
     raid_attendance[name] = { 'name': name, 'level': None, 'class': None, 'guild': None }
 
   return raid_attendance

@@ -49,11 +49,10 @@ def format_absentee(absentee, pilot):
     return '  {}/{}'.format(pilot, absentee)
   return '  {}'.format(absentee)
 
-def discord_format_absentee(absentee):
-  name, pilot = absentee.get('name'), absentee.get('pilot')
-  if pilot is None:
-    return name
-  return '{} ({})'.format(pilot, name) 
+def discord_format_absentee(absentee, pilot):
+  if pilot is not None:
+    return '{} ({})'.format(pilot, absentee)
+  return '{}'.format(absentee)
 
 def debug_obj(pilots, guests, guilds, absentees, attendance, raid_attendance):
   return {

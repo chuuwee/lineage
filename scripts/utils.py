@@ -112,8 +112,8 @@ def report_to_discord(name, date, dkp, id, debug):
   # Add the participant lists as fields to the embed message
   embed.add_embed_field(name='Credited @ Raid', value='```\n{}\n```'.format('\n'.join(raid_list)), inline=False)
   embed.add_embed_field(name='/who', value='```\n{}\n```'.format('\n'.join(who_list)), inline=True)
-  embed.add_embed_field(name='Pilots', value='```\n{}\n```'.format('\n'.join(pilot_list)), inline=True)
-  embed.add_embed_field(name='Absentees', value='```\n{}\n```'.format('\n'.join(absentee_list)), inline=True)
+  embed.add_embed_field(name='Pilots', value='```\n{}\n```'.format('\n'.join(pilot_list)) if len(pilot_list) else '```\nNONE\n```', inline=True)
+  embed.add_embed_field(name='Absentees', value='```\n{}\n```'.format('\n'.join(absentee_list)) if len(absentee_list) else '```\nNONE\n```', inline=True)
 
   if len(guest_list) != 0:
     embed.add_embed_field(name='Guests', value='```\n{}\n```'.format('\n'.join(guest_list)), inline=False)

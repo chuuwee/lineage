@@ -11,7 +11,7 @@ from datetime import datetime
 from logger import get_logger
 from tkinter import filedialog
 from monitor import gen_raid_attendance
-from utils import debug_str, report_to_discord_guest
+from utils import debug_str, report_to_discord_guest, VERSION
 from upload import get_raid_attendance_payload
 
 logger = get_logger('guest_monitor')
@@ -63,7 +63,7 @@ def store_attendance(event, attendance, debug):
     'event_data': event_,
     'attendance_data': data,
     'debug': debug,
-    'version': '0.1.0',
+    'version': VERSION,
   }
   report_to_discord_guest(event_name, now, event['dkp'], filename, raw_pickle, debug)
 

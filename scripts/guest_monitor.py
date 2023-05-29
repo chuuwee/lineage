@@ -11,7 +11,7 @@ from datetime import datetime
 from logger import get_logger
 from tkinter import filedialog
 from monitor import gen_raid_attendance
-from utils import debug_str
+from utils import debug_str, report_to_discord_guest
 from upload import get_raid_attendance_payload
 
 logger = get_logger('guest_monitor')
@@ -56,16 +56,16 @@ def store_attendance(event, attendance, debug):
   }
 
   filename = get_filename(event)
-  # serialize the cookies to a file
-  with open('{}.raid'.format(filename), 'wb') as f:
-    logger.info('Writing file, {}'.format('{}.raid'.format(filename)))
-    pickle.dump({
-      'event_date': event_date,
-      'event_name': event_name,
-      'event_data': event_,
-      'attendance_data': data,
-      'debug': debug,
-    }, f)
+
+  raw_pickle = {
+    'event_date': event_date,
+    'event_name': event_name,
+    'event_data': event_,
+    'attendance_data': data,
+    'debug': debug,
+    'version': '0.1.0',
+  }
+  report_to_discord_guest(event_name, now, event['dkp'], filename, raw_pickle, debug)
 
 if __name__ == "__main__":
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but

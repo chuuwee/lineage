@@ -10,10 +10,18 @@ from get_events import get_events
 from logger import get_logger
 from login import login
 from tkinter import filedialog
+from discord_webhook import DiscordWebhook
 
 logger = get_logger('monitor')
 
 def create_attendance_from_log(guest_log, event, cookies):
+  if os.path.exists('webhook.url'):
+    with open('webhook.url', 'rb') as f:
+      webhook_url = f.read().strip().decode()
+  else:
+    logger.info('No webhook.url file found. See README.md to send Discord reports.')
+    return
+
   event_name = guest_log.get('event_name')
   event_date = guest_log.get('event_date')
   attendance_data = guest_log.get('attendance_data')
@@ -38,6 +46,14 @@ def create_attendance_from_log(guest_log, event, cookies):
     response = requests.post(url, cookies=cookies, headers=headers, data=encoded_attendance_data, allow_redirects=False, verify=False)
     response.raise_for_status()
     debug = guest_log.get('debug')
+    message_id = guest_log.get('message_id')
+    if message_id is not None and webhook_url is not None:
+      wh = DiscordWebhook(url=webhook_url, id=message_id)
+      try:
+        logger.info('Deleting original guest report {}'.format(message_id))
+        wh.delete()
+      except Exception as err:
+        logger.info('Error deleting guest report on Discord'.format(message_id))
     report_to_discord(event_name, localized_date, dkp, event['id'], debug)
     logger.info('Upload succeeded, {}'.format(event['id']))
   except Exception as err:

@@ -8,3 +8,4 @@ dist
 monitor.spec
 *.url
 *.raid
+webhookurl.txt

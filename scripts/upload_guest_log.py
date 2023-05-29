@@ -5,7 +5,7 @@ import requests
 import sys
 import tkinter as tk
 import urllib
-from utils import report_to_discord
+from utils import report_to_discord, get_webhook_url
 from get_events import get_events
 from logger import get_logger
 from login import login
@@ -15,10 +15,8 @@ from discord_webhook import DiscordWebhook
 logger = get_logger('monitor')
 
 def create_attendance_from_log(guest_log, event, cookies):
-  if os.path.exists('webhook.url'):
-    with open('webhook.url', 'rb') as f:
-      webhook_url = f.read().strip().decode()
-  else:
+  webhook_url = get_webhook_url()
+  if webhook_url is None:
     logger.info('No webhook.url file found. See README.md to send Discord reports.')
     return
 

@@ -4,7 +4,7 @@ import sys
 import time
 import tkinter as tk
 from tkinter import filedialog
-from utils import debug_obj, debug_str, class_name_by_alias
+from utils import debug_obj, debug_str, class_name_by_alias, get_webhook_url
 from upload import upload_attendance
 from get_events import get_events
 from logger import get_logger
@@ -76,7 +76,7 @@ def gen_raid_activity(file_path):
       name = system_test_match.group("self")
       logger.info('[SYSTEM CHECK] {}'.format(name))
       logger.info('[SYSTEM CHECK] Site integration {}'.format(is_site_integration_enabled()))
-      logger.info('[SYSTEM CHECK] Discord integration {}'.format(os.path.exists('webhook.url')))
+      logger.info('[SYSTEM CHECK] Discord integration {}'.format(get_webhook_url()))
       logger.info('[SYSTEM CHECK] Reading activity {}'.format(reading_activity))
       logger.info('[SYSTEM CHECK] Reading /who {}'.format(reading_slash_who))
       yield ('SYSTEM_CHECK', None)

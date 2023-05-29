@@ -23,6 +23,15 @@ class_dict = {
     "Wizard": ["Channeler", "Evoker", "Sorcerer"]
 }
 
+def get_webhook_url():
+  if os.path.exists('webhookurl.txt'):
+    with open('webhookurl.txt', 'rb') as f:
+      return f.read().strip().decode()
+  if os.path.exists('webhook.url'):
+    with open('webhook.url', 'rb') as f:
+      return f.read().strip().decode()
+  return None
+
 logger = get_logger('utils')
 
 class_name_by_alias = {}
@@ -82,10 +91,8 @@ def debug_str(pilots, guests, guilds, absentees, attendance, raid_attendance):
   )
 
 def report_to_discord(name, date, dkp, id, debug):
-  if os.path.exists('webhook.url'):
-    with open('webhook.url', 'rb') as f:
-      webhook_url = f.read().strip()
-  else:
+  webhook_url = get_webhook_url()
+  if webhook_url is None:
     logger.info('No webhook.url file found. See README.md to send Discord reports.')
     return
 
@@ -137,10 +144,8 @@ def report_to_discord(name, date, dkp, id, debug):
 
 def report_to_discord_guest(name, date, dkp, filename, raw_pickle, debug):
   logger.info('Attempting to report to Discord, {}, {}, {}, {}'.format(name, date, dkp, filename))
-  if os.path.exists('webhook.url'):
-    with open('webhook.url', 'rb') as f:
-      webhook_url = f.read().strip().decode()
-  else:
+  webhook_url = get_webhook_url()
+  if webhook_url is None:
     logger.info('No webhook.url file found - CANCELING REPORT. See README.md to send Discord reports.')
     return
   

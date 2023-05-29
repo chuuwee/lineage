@@ -84,6 +84,11 @@ if __name__ == "__main__":
 
   # show the file dialog and get the selected file path
   file_path = filedialog.askopenfilename()
+  if file_path is None or file_path == '':
+    logger.info('No file selected, closing.')
+    sys.exit()
+
+  logger.info('Monitoring {}'.format(file_path))
 
   for event, attendance, debug in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():

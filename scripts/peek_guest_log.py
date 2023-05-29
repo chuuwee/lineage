@@ -25,8 +25,8 @@ if __name__ == "__main__":
     executable_dir = os.path.dirname(executable_path)
     os.chdir(executable_dir)
 
-  if not os.path.exists('cookies.pkl'):
-    login()
+  if not login():
+    sys.exit()
 
   # create a Tkinter root window
   root = tk.Tk()

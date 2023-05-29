@@ -291,8 +291,8 @@ if __name__ == "__main__":
     executable_dir = os.path.dirname(executable_path)
     os.chdir(executable_dir)
 
-  if not os.path.exists('cookies.pkl'):
-    login()
+  if not login():
+    sys.exit()
 
   # create a Tkinter root window
   root = tk.Tk()
@@ -302,6 +302,10 @@ if __name__ == "__main__":
 
   # show the file dialog and get the selected file path
   file_path = filedialog.askopenfilename()
+  if file_path is None or file_path == '':
+    logger.info('No file selected, closing.')
+    sys.exit()
+
   logger.info('Monitoring {}'.format(file_path))
 
   for event, attendance, debug in gen_raid_attendance(file_path):

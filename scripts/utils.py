@@ -213,7 +213,7 @@ def report_to_discord_guest(name, date, dkp, filename, raw_pickle, debug):
     }, f)
 
     # Create webhook
-    wh_with_file = DiscordWebhook(url=webhook_url, id=wh.id, content="**GUEST CAPTURE -- UNPOSTED**")
+    wh_with_file = DiscordWebhook(url=webhook_url, id=wh.id, content="**🚨 GUEST CAPTURE -- UNPOSTED 🚨**")
     setup_webhook(wh_with_file)
     wh_with_file.add_file(file=file_for_discord, filename='{}.raid'.format(filename))
     wh_with_file.edit()

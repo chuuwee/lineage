@@ -92,7 +92,7 @@ def upload_guest_log(file_path):
   event = create_event_from_log(guest_log, cookies)
   create_attendance_from_log(guest_log, event, cookies)
 
-if __name__ == "__main__":
+def upload_raid_file():
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but
   # it's duplicated in the logger for now.
   if getattr(sys, 'frozen', False):
@@ -119,3 +119,6 @@ if __name__ == "__main__":
   logger.info('Preparing to upload {}'.format(file_path))
 
   upload_guest_log(file_path)
+
+if __name__ == "__main__":
+  upload_raid_file()

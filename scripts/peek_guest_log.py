@@ -4,6 +4,9 @@ import sys
 import tkinter as tk
 from login import login
 from tkinter import filedialog
+from logger import get_logger
+
+logger = get_logger('peek_guest_log')
 
 def peek_guest_log(file_path):
   # Load the serialized cookies from a file
@@ -16,7 +19,7 @@ def peek_guest_log(file_path):
   print('[DKP]\n{}'.format(attendance_data.get('points')))
   print('[SUMMARY]\n{}'.format(attendance_data.get('description')))
 
-if __name__ == "__main__":
+def view_raid_file():
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but
   # it's duplicated in the logger for now.
   if getattr(sys, 'frozen', False):
@@ -36,5 +39,11 @@ if __name__ == "__main__":
 
   # show the file dialog and get the selected file path
   file_path = filedialog.askopenfilename()
+  if file_path is None or file_path == '':
+    logger.info('No file selected, closing.')
+    sys.exit()
 
   peek_guest_log(file_path)
+
+if __name__ == "__main__":
+  view_raid_file()

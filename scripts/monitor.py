@@ -282,7 +282,7 @@ def gen_raid_attendance(file_path):
       absentees = None
       attendance = None
 
-if __name__ == "__main__":
+def monitor():
   # TODO(ISSUE-11): We should create an entry point where this can be centralized, but
   # it's duplicated in the logger for now.
   if getattr(sys, 'frozen', False):
@@ -312,3 +312,6 @@ if __name__ == "__main__":
     for name, attendee in attendance.items():
       logger.info('Confirmed {}, {}'.format(name, attendee))
     upload_attendance(event, attendance, debug)
+
+if __name__ == "__main__":
+  monitor()

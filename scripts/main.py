@@ -1,7 +1,6 @@
 import sys
 import os
 import inquirer
-import pyfiglet
 from time import sleep
 from sys import exit
 from monitor import monitor
@@ -11,15 +10,13 @@ from peek_guest_log import view_raid_file
 from readme import readme
 
 def print_title():
-  result = pyfiglet.figlet_format("DKP TOOLS", font = "slant")
-
-  # Append author attribution to the correct line of output
-  lines = result.splitlines()
-  lines[-2] += ' by Lineage'
-
-  # Join the lines back together
-  joined = '\n'.join(lines)
-  print(joined)
+  print('')
+  print('    ____  __ __ ____     ______            __    ')
+  print('   / __ \/ //_// __ \   /_  __/___  ____  / /____')
+  print('  / / / / ,<  / /_/ /    / / / __ \/ __ \/ / ___/')
+  print(' / /_/ / /| |/ ____/    / / / /_/ / /_/ / (__  ) ')
+  print('/_____/_/ |_/_/        /_/  \____/\____/_/____/  by Lineage')
+  print('')
 
 def main():
   choices=[

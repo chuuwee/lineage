@@ -27,7 +27,6 @@ def main():
     "Upload raid file (admin)",
     "Monitor logs (guest)",
     "View contents of raid file",
-    "README",
     "Quit",
   ]
 
@@ -47,30 +46,27 @@ def main():
     answers = inquirer.prompt(questions)
     choice = answers['choice']
 
-    if choice == choices[5]:
+    if choice == choices[4]:
       sys.exit()
 
-    try:
-      if choice == choices[0]:
-        console.clear()
-        monitor()
-      elif choice == choices[1]:
-        console.clear()
-        upload_raid_file()
-        input("Press Enter to return to menu.")
-      elif choice == choices[2]:
-        console.clear()
-        guest_monitor()
-      elif choice == choices[3]:
-        console.clear()
-        view_raid_file()
-        input("Press Enter to return to menu.")
-      elif choice == choices[4]:
-        readme()
-      else:
-        print("Invalid choice. Please choose a valid option.")
-    except (Exception, SystemExit, KeyboardInterrupt) as err:
-      input("Press Enter to return to menu.")
+    if choice == choices[0]:
+      console.clear()
+      monitor()
+      sys.exit()
+    elif choice == choices[1]:
+      console.clear()
+      upload_raid_file()
+      sys.exit()
+    elif choice == choices[2]:
+      console.clear()
+      guest_monitor()
+      sys.exit()
+    elif choice == choices[3]:
+      console.clear()
+      view_raid_file()
+      sys.exit()
+    else:
+      print("Invalid choice. Please choose a valid option.")
 
 if __name__ == "__main__":
   main()

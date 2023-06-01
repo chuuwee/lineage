@@ -28,9 +28,6 @@ def view_raid_file():
     executable_dir = os.path.dirname(executable_path)
     os.chdir(executable_dir)
 
-  if not login():
-    sys.exit()
-
   # create a Tkinter root window
   root = tk.Tk()
 

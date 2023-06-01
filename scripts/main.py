@@ -8,6 +8,9 @@ from upload_guest_log import upload_raid_file
 from guest_monitor import guest_monitor
 from peek_guest_log import view_raid_file
 from readme import readme
+from rich.console import Console
+
+console = Console()
 
 def print_title():
   print('')
@@ -29,7 +32,7 @@ def main():
   ]
 
   while True:
-    os.system('clear')
+    console.clear()
     print_title()
 
     questions = [
@@ -49,17 +52,17 @@ def main():
 
     try:
       if choice == choices[0]:
-        os.system('clear')
+        console.clear()
         monitor()
       elif choice == choices[1]:
-        os.system('clear')
+        console.clear()
         upload_raid_file()
         input("Press Enter to return to menu.")
       elif choice == choices[2]:
-        os.system('clear')
+        console.clear()
         guest_monitor()
       elif choice == choices[3]:
-        os.system('clear')
+        console.clear()
         view_raid_file()
         input("Press Enter to return to menu.")
       elif choice == choices[4]:

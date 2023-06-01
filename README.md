@@ -1,41 +1,56 @@
-# Lineage
+# DKP Tools
 
-Short set of applications intended to support raid / guild leads in populating
-DKP tracking website.
+Tools to support raid / guild leads by and for Lineage. Longer term plans for
+portability to other sites or guilds.
 
 ## Instructions
 
-There are three applications available in the tool kit:
+  * Monitor logs (admin)
+  * Upload raid file (admin)
+  * Monitor logs (guest)
+  * View contents of raid file
 
-* `dkp-monitor.exe`
-  * This is for raid leads / site admins who can submit DKP logs freely. It will
-  request a login and password for the site, followed by your characters
-  logfile.
-* `dkp-monitor-guest.exe`
-  * This is for raiders who would like to assist in running a raid, and can run
-  what amounts to an offline version of the above scripts. It will ask for your
-  characters logfile, and generate files with extension *.raid as you capture
-  raid attendance. Hand these to a raid lead for upload.
-* `dkp-upload.exe`
-  * Parses *.raid files of captured raids. Will ask for your login (unless
-  you're logged in) and the location of the relevant *.raid file.
-* `dkp-peek.exe`
-  * Prints summary of a *.raid file. Will prompt for location of a .raid file
-  and print contents. Useful for admins to validate logs before upload.
+### Monitor logs (admin)
 
-All three applications will output state information about what they're
-capturing as they run.
+Site admins must log in with their credentials, select a logfile to monitor, and
+utilize a series of [in game commands](#in-game-commands) to trigger event
+collection or attendance corrections. Requires [webhook file](#discord) to
+submit to Discord.
 
-Consider keeping your log around in the event you need or want to corroborate
-any of the application's decisions.
+### Upload raid file (admin)
 
-### In game commands
+Site admins must log in with their credentials and select a `.raid` file to
+upload. Requires [webhook file](#discord) to submit to Discord.
+
+### Monitor logs (guest)
+
+If you are not an admin but would like to help out, this tool can be utilized to
+capture `.raid` files for later upload by an admin. If you're interested, I'd
+suggest contacting a lead on Discord for more info on the [webhook
+file](#discord).
+
+Much like the admin monitor but without login, you select a logfile to monitor,
+and utilize a series of [in game commands](#in-game-commands) to trigger event
+collection or attendance corrections.
+
+### View contents of raid file
+
+Run and select a `.raid` file to see a summary of the contents.
+
+### Discord
+
+Reporting to Discord requires the presence of `webhookurl.txt` (though
+`webhook.url` is still supported) in the same directory as `dkp-tools.exe`. This
+contains a private webhook address and can be requested from a lead over
+Discord.
+
+## In game commands
 
 With the monitor running on your EverQuest log (and logging enabled in game),
 you begin the process of capturing attendance by writing one of the trigger
 statements into guild chat.
 
-#### +TARGET, +EVENT, +LOCALE
+### +TARGET, +EVENT, +LOCALE
 * `/guild +TARGET Cazic-Thule`
 * `/guild +EVENT Farming Quillmane`
 * `/guild +LOCALE Plane of Fear`
@@ -52,7 +67,7 @@ explaining context in it, too:
 
 There are a handful of commands users can run at any point during collection to influence how we record during events:
 
-#### +PILOT
+### +PILOT
 Piloting a bot?
 * `/tell Yourname +PILOT Pilotsrealcharname`
 * `/gu +PILOT Pilotsrealcharname`
@@ -60,15 +75,15 @@ Piloting a bot?
 If (AND ONLY IF) you are the raid leader, and you are driving a bot, you can use emotes to remove the bot from attendance log and put yourself in its place:
 * `/em +PILOT Pilotsrealcharname`
 
-#### +GUILD
+### +GUILD
 Adding a guest guild:
 * `/guild +GUILD Nova`
 
-#### +GUEST
+### +GUEST
 Adding a guest player requires they send you a tell:
 * `/tell Yourname +GUEST`
 
-#### +ABSENT
+### +ABSENT
 Some commands require the tick being captured to operate. In particular,
 recording absence (as we don't want to collect absence in a persistent way, but
 only when someone isn't in zone for tick due to legitimate reasons). This will
@@ -81,17 +96,17 @@ LASTLY, run a final `/who` command to kick off capturing of players in zone.
 This will resolve attendance alongside the corrections and upload it to the
 website.
 
-#### +CANCEL
+### +CANCEL
 If you'd like to cancel an event mid-collection to restart it:
 * `/em +CANCEL`
 
-#### +RESET
+### +RESET
 If you want to clear out the list of current guilds, guests, or bot pilots:
 * `/em +RESET`
 
-### Debugging
+## Debugging
 
-#### +TEST
+### +TEST
 IF you'd like to check the current state of data collection, run:
 * `/em +TEST`
 

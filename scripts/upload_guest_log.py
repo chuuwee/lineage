@@ -12,7 +12,7 @@ from login import login
 from tkinter import filedialog
 from discord_webhook import DiscordWebhook
 
-logger = get_logger('monitor')
+logger = get_logger('guest_upload')
 
 def create_attendance_from_log(guest_log, event, cookies):
   webhook_url = get_webhook_url()

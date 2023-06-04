@@ -22,10 +22,10 @@ def create_event(config, live = True):
     if not event_category_id_raw.isdigit():
       raise ValueError('Invalid category id')
     event_category_id = int(event_category_id_raw)
-    event_name: str = input('name your event: ')
+    event_name: str = input('name your event: ').strip()
   elif config is not None:
     event_category_id = CATEGORY_ID_BY_CATEGORY.get(config.get('category'))
-    event_name = config.get('name')
+    event_name = config.get('name').strip()
   else:
     raise ValueError('Problem creating event')
 

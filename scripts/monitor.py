@@ -311,7 +311,10 @@ def monitor():
   for event, attendance, debug in gen_raid_attendance(file_path):
     for name, attendee in attendance.items():
       logger.info('Confirmed {}, {}'.format(name, attendee))
-    upload_attendance(event, attendance, debug)
+    try:
+      upload_attendance(event, attendance, debug)
+    except Exception as err:
+      logger.error('Problem uploading attendance, check log for issues and consider trying again, {}'.format(err))
 
 if __name__ == "__main__":
   monitor()

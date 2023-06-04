@@ -118,7 +118,10 @@ def upload_raid_file():
 
   logger.info('Preparing to upload {}'.format(file_path))
 
-  upload_guest_log(file_path)
+  try:
+    upload_guest_log(file_path)
+  except Exception as err:
+    logger.error('Problem uploading attendance, check log for issues and consider trying again, {}'.format(err))
 
 if __name__ == "__main__":
   upload_raid_file()

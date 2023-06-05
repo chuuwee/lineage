@@ -45,8 +45,8 @@ def gen_tail(filename):
 
       yield line
 
-def gen_messages(file_path):
-  for line in gen_tail(file_path):
+def gen_messages(file_gen):
+  for line in file_gen:
     log_match = re.match(PATTERNS['DEFAULT'], line)
     if log_match is None:
       continue
@@ -67,10 +67,10 @@ def is_site_integration_enabled():
       return False
   return False
 
-def gen_raid_activity(file_path):
+def gen_raid_activity(file_gen):
   reading_activity = False
   reading_slash_who = False
-  for message in gen_messages(file_path):
+  for message in gen_messages(file_gen):
     system_test_match = re.match(PATTERNS['ACTIVITY_SYSTEM_TEST'], message)
     if system_test_match is not None:
       name = system_test_match.group("self")
@@ -231,14 +231,14 @@ def get_raid_attendance(pilots: Dict[str, str], guests: Set[str], guilds: Set[st
 
   return raid_attendance
 
-def gen_raid_attendance(file_path):
+def gen_raid_attendance(file_gen):
   event = None
   guilds: Set[str] = {'LINEAGE'} # Maybe set via CLI as the host guild
   absentees: Optional[Set[str]] = None
   attendance = None
   pilots: Dict[str, str] = {}
   guests: Set[str] = set()
-  for (kind, message) in gen_raid_activity(file_path):
+  for (kind, message) in gen_raid_activity(file_gen):
     logger.info('{}, {}'.format(kind, message))
     if kind == 'START':
       event = message
@@ -308,7 +308,8 @@ def monitor():
 
   logger.info('Monitoring {}'.format(file_path))
 
-  for event, attendance, debug in gen_raid_attendance(file_path):
+  file_gen = gen_tail(file_path)
+  for event, attendance, debug in gen_raid_attendance(file_gen):
     for name, attendee in attendance.items():
       logger.info('Confirmed {}, {}'.format(name, attendee))
     try:

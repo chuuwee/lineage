@@ -5,6 +5,7 @@ import requests
 import sys
 import tkinter as tk
 import urllib
+from upload_guest_purchases import upload_grats_file
 from utils import report_to_discord, get_webhook_url
 from get_events import get_events
 from logger import get_logger
@@ -115,6 +116,9 @@ def upload_raid_file():
   if file_path is None or file_path == '':
     logger.info('No file selected, closing.')
     sys.exit()
+
+  if file_path.endswith('.grats'):
+    return upload_grats_file(file_path)
 
   logger.info('Preparing to upload {}'.format(file_path))
 

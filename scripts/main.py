@@ -24,7 +24,7 @@ def print_title():
 def main():
   choices=[
     "Monitor logs (admin)",
-    "Upload raid file (admin)",
+    "Upload raid/grats file (admin)",
     "Monitor logs (guest)",
     "View contents of raid file",
     "Quit",

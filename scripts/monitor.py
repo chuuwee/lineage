@@ -4,8 +4,8 @@ import sys
 import time
 import tkinter as tk
 from tkinter import filedialog
-from utils import debug_obj, debug_str, class_name_by_alias, get_webhook_url
-from upload import upload_attendance
+from utils import debug_obj, debug_str, class_name_by_alias, get_webhook_url, get_sid, report_purchase_to_discord
+from upload import upload_attendance, upload_purchase
 from get_events import get_events
 from logger import get_logger
 from login import login
@@ -30,6 +30,10 @@ PATTERNS = {
   'ACTIVITY_SYSTEM_TEST': r"(?P<self>[A-Z][a-z]+) (?i:\+TEST)",
   'ACTIVITY_CANCEL': r"(?P<self>[A-Z][a-z]+) (?i:\+CANCEL)",
   'ACTIVITY_RESET': r"(?P<self>[A-Z][a-z]+) (?i:\+RESET)",
+  'ACTIVITY_ID_GUILD': r"^You say to your guild, '(?i:\+ID)\s+(?P<id>[a-z0-9]+)'",
+  'ACTIVITY_ID_SELF': r"(?P<self>[A-Z][a-z]+) (?i:\+ID)\s+(?P<id>[a-z0-9]+)",
+  'ACTIVITY_BUY_GUILD': r"^You say to your guild, '(?i:\+GRATS)\s+(?P<name>[A-Za-z]+)\s+(?P<dkp>\d+)\s+(?P<item>.+)'",
+  'ACTIVITY_BUY_SELF': r"(?P<self>[A-Z][a-z]+) (?i:\+GRATS)\s+(?P<name>[A-Za-z]+)\s+(?P<dkp>\d+)\s+(?P<item>.+)",
 }
 
 def gen_tail(filename):
@@ -101,6 +105,18 @@ def gen_raid_activity(file_gen):
         logger.info('[CANCEL] Nothing to cancel')
       continue
 
+    buy_match_guild = re.match(PATTERNS['ACTIVITY_BUY_GUILD'], message)
+    if buy_match_guild is not None:
+      name, dkp, item = buy_match_guild.group("name", "dkp", "item")
+      yield ('BUY', { 'name': name.capitalize(), 'dkp': int(dkp), 'item': item })
+      continue
+
+    buy_match_self = re.match(PATTERNS['ACTIVITY_BUY_SELF'], message)
+    if buy_match_self is not None:
+      name, dkp, item = buy_match_self.group("name", "dkp", "item")
+      yield ('BUY', { 'name': name.capitalize(), 'dkp': int(dkp), 'item': item })
+      continue
+
     guild_match = re.match(PATTERNS['ACTIVITY_GUILD'], message)
     if guild_match is not None:
       name = guild_match.group("name")
@@ -148,8 +164,9 @@ def gen_raid_activity(file_gen):
       if start_match is not None:
         reading_activity = True
         category, name, dkp = start_match.group("category", "name", "dkp")
-        yield ('START', { 'category': category.upper(), 'name': name, 'dkp': int(dkp) if dkp is not None else 1 })
-      continue
+        sid = get_sid()
+        yield ('START', { 'category': category.upper(), 'name': '{} ({})'.format(name, sid), 'dkp': int(dkp) if dkp is not None else 1, 'sid': sid, })
+        continue
 
     if message.startswith("There are"):
       logger.info('Saw "There are"; stop reading /who')
@@ -231,7 +248,7 @@ def get_raid_attendance(pilots: Dict[str, str], guests: Set[str], guilds: Set[st
 
   return raid_attendance
 
-def gen_raid_attendance(file_gen):
+def gen_raid_outcomes(file_gen):
   event = None
   guilds: Set[str] = {'LINEAGE'} # Maybe set via CLI as the host guild
   absentees: Optional[Set[str]] = None
@@ -247,10 +264,12 @@ def gen_raid_attendance(file_gen):
     elif kind == 'END':
       raid_attendance = get_raid_attendance(pilots, guests, guilds, absentees, attendance)
       debug = debug_obj(pilots, guests, guilds, absentees, attendance, raid_attendance)
-      yield (event, raid_attendance, debug)
+      yield ('ATTENDANCE', (event, raid_attendance, debug))
       event = None
       absentees = None
       attendance = None
+    elif kind == 'BUY':
+      yield ('PURCHASE', message)
     elif kind == 'ATTENDEE':
       name = message.get('name')
       attendance[name] = message
@@ -309,13 +328,28 @@ def monitor():
   logger.info('Monitoring {}'.format(file_path))
 
   file_gen = gen_tail(file_path)
-  for event, attendance, debug in gen_raid_attendance(file_gen):
-    for name, attendee in attendance.items():
-      logger.info('Confirmed {}, {}'.format(name, attendee))
-    try:
-      upload_attendance(event, attendance, debug)
-    except Exception as err:
-      logger.error('Problem uploading attendance, check log for issues and consider trying again, {}'.format(err))
+  purchases = []
+  last_event = None
+  # Set to none initially, meaning we'll need / end up creating one. This will
+  # remain fixed to a message on a per-event basis, being reset each time a new
+  # event kicks off.
+  purchase_message_id = None
+  for (kind, message) in gen_raid_outcomes(file_gen):
+    if kind == 'ATTENDANCE':
+      purchase_message_id = None
+      purchases = []
+      event, attendance, debug = message
+      last_event = event
+      for name, attendee in attendance.items():
+        logger.info('Confirmed {}, {}'.format(name, attendee))
+      try:
+        upload_attendance(event, attendance, debug)
+      except Exception as err:
+        logger.error('Problem uploading attendance, check log for issues and consider trying again, {}'.format(err))
+    elif kind == 'PURCHASE':
+      item = message
+      purchase_message_id, purchase = upload_purchase(purchases, item, last_event, purchase_message_id)
+      purchases.append(purchase)
 
 if __name__ == "__main__":
   monitor()

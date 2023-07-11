@@ -29,7 +29,7 @@ def login_():
   # set the form data for the request
   data = urllib.parse.urlencode({
     'login': login,
-    'password': password,
+    'password': password.strip(),
     'submit': 'log in',
     'email': ''
   })

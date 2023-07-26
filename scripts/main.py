@@ -56,7 +56,6 @@ def main():
     elif choice == choices[1]:
       console.clear()
       upload_raid_file()
-      sys.exit()
     elif choice == choices[2]:
       console.clear()
       guest_monitor()

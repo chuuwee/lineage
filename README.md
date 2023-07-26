@@ -6,7 +6,7 @@ portability to other sites or guilds.
 ## Instructions
 
   * Monitor logs (admin)
-  * Upload raid file (admin)
+  * Upload raid/grats file (admin)
   * Monitor logs (guest)
   * View contents of raid file
 
@@ -17,10 +17,10 @@ utilize a series of [in game commands](#in-game-commands) to trigger event
 collection or attendance corrections. Requires [webhook file](#discord) to
 submit to Discord.
 
-### Upload raid file (admin)
+### Upload raid/grats file (admin)
 
-Site admins must log in with their credentials and select a `.raid` file to
-upload. Requires [webhook file](#discord) to submit to Discord.
+Site admins must log in with their credentials and select a `.raid` or `.grats`
+file to upload. Requires [webhook file](#discord) to submit to Discord.
 
 ### Monitor logs (guest)
 
@@ -36,6 +36,10 @@ collection or attendance corrections.
 ### View contents of raid file
 
 Run and select a `.raid` file to see a summary of the contents.
+
+### View contents of grats file
+
+Unsupported at this time.
 
 ### Discord
 
@@ -75,6 +79,16 @@ Piloting a bot?
 If (AND ONLY IF) you are the raid leader, and you are driving a bot, you can use emotes to remove the bot from attendance log and put yourself in its place:
 * `/em +PILOT Pilotsrealcharname`
 
+### +GRATS
+Reporting purchases can be done with guild:
+* `/gu +GRATS Playername 2 Orb of Tishan`
+
+You can also report purchases with emotes:
+* `/em +GRATS Playername 2 Orb of Tishan`
+
+Note: Pilots are not considered with purchases. `Playername` should represent
+the main character of the guild member.
+
 ### +GUILD
 Adding a guest guild:
 * `/guild +GUILD Nova`
@@ -107,7 +121,7 @@ If you want to clear out the list of current guilds, guests, or bot pilots:
 ## Debugging
 
 ### +TEST
-IF you'd like to check the current state of data collection, run:
+If you'd like to check the current state of data collection, run:
 * `/em +TEST`
 
 `debug.log` is written to the root directory and contains detailed tracking of

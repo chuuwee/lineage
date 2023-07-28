@@ -164,7 +164,7 @@ def gen_raid_activity(file_gen):
         category, name, dkp = start_match.group("category", "name", "dkp")
         sid = get_sid()
         yield ('START', { 'category': category.upper(), 'name': '{} ({})'.format(name, sid), 'dkp': int(dkp) if dkp is not None else 1, 'sid': sid, })
-        continue
+      continue
 
     if message.startswith("There are"):
       logger.info('Saw "There are"; stop reading /who')

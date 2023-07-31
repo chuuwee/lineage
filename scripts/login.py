@@ -5,15 +5,22 @@ import urllib.parse
 from get_events import get_events
 from getpass import getpass
 from logger import get_logger
+from bs4 import BeautifulSoup
 
 logger = get_logger('login')
 
 def is_login_valid():
-  try:
-    events = get_events()
-    return len(events) > 0
-  except Exception as err:
-    return False
+  # Load the serialized cookies from a file
+  with open('cookies.pkl', 'rb') as f:
+    cookies = pickle.load(f)
+
+  # Make a GET request to the site with the loaded cookies
+  response = requests.get('http://lineageeq.dkpsystem.com/admin.php', cookies=cookies)
+  soup = BeautifulSoup(response.text, 'html.parser')
+
+  # Extract the name and identifier values
+  title = soup.css.select('#pagetitle')
+  return title[0].text.strip() == 'Administration Menu'
 
 def login_():
   # set the url and headers for the request

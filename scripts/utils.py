@@ -113,7 +113,7 @@ def get_purchase_from_item(item):
   now = datetime.now(central)
 
   # Format the current time as a string in the desired format
-  date_str = now.strftime("%-m/%-d/%Y").lower()
+  date_str = "{}/{}/{}".format(now.month, now.day, now.year)
 
   return {
     **item,

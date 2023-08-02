@@ -58,7 +58,7 @@ def store_attendance(event, attendance, debug):
   now = datetime.now(central)
 
   # Format the current time as a string in the desired format
-  date_str = now.strftime("%-m/%-d/%Y").lower()
+  date_str = "{}/{}/{}".format(now.month, now.day, now.year)
 
   (event_date, event_name, event_) = create_event(event, live=False)
   char_payload = get_raid_attendance_payload(attendance)
